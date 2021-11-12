@@ -17,11 +17,12 @@ async function uniqueUsername(req, res, next) {
 }
 
 // middleware for body containing pword & username
-async function checkBody(req, res, next) {
-    try {
-
-    } catch (err) {
-        next(err)
+function checkBody(req, res, next) {
+    const { username, password } = req.body
+    if (!username || username === '' || !password || password === '') {
+        next({status: 404, message: "username and password required"})
+    } else {
+        next()
     }
 }
 
