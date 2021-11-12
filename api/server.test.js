@@ -1,21 +1,18 @@
 const request = require('supertest');
 const server = require('./server');
-const db = require('../data/dbConfig')
-const bcrypt = require('bcryptjs')
-
-
+const db = require('../data/dbConfig');
 
 beforeAll(async () => {
-  await db.migrate.rollback()
-  await db.migrate.latest()
+  await db.migrate.rollback();
+  await db.migrate.latest();
 })
 
 beforeEach(async () => {
-  await db.seed.run()
+  await db.seed.run();
 })
 
 afterAll(async () => {
-  await db.destroy()
+  await db.destroy();
 })
 
 test('sanity', () => {
@@ -45,6 +42,33 @@ describe('/api/auth', () => {
       const resp = await request(server).post('/api/auth/register')
       .send({username: "Timmy", password: "1234"});
       expect(resp.body).toMatchObject({ "id": 3, "username": "Timmy"});
+    })
+  })
+})
+
+describe('/api/users', () => {
+  describe('[GET] request to users', () => {
+    test('[GET] responds with token required without a token', async () => {
+      const resp = await request(server).get('/api/jokes');
+      expect(resp.status).toEqual(404);
+      expect(resp.body).toMatchObject({
+        "message": "token required", 
+        "prodMessage": "Oops, something is not working correctly"
+      });
+    })
+    test('[GET] responds with invalid token with an invalid token', async () => {
+      const resp = await request(server).get('/api/jokes').set('Authorization', 'faketoken');
+      expect(resp.status).toEqual(404);
+      expect(resp.body).toMatchObject({
+        "message": "token invalid", 
+        "prodMessage": "Oops, something is not working correctly"
+      });
+    })
+    test('[GET] responds with all jokes on successful request', async () => {
+      let res = await request(server).post('/api/auth/login').send({username: "Billy", password: "1234"});
+      console.log(res.body)
+      res = await request(server).get('/api/jokes').set('Authorization', res.body.token);
+      expect(res.body).toHaveLength(3);
     })
   })
 })
