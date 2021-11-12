@@ -66,7 +66,6 @@ describe('/api/users', () => {
     })
     test('[GET] responds with all jokes on successful request', async () => {
       let res = await request(server).post('/api/auth/login').send({username: "Billy", password: "1234"});
-      console.log(res.body)
       res = await request(server).get('/api/jokes').set('Authorization', res.body.token);
       expect(res.body).toHaveLength(3);
     })
